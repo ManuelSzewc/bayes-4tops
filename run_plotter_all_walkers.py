@@ -407,22 +407,3 @@ plt.legend(loc='upper left')
 plt.savefig(data_dir+'/average_Z_assignments.pdf')
 plt.savefig(data_dir+'/average_Z_assignments.png')
 
-## use this as a ROC curve
-fig = plt.figure(figsize=(8,6))
-fpr, tpr, thresholds = roc_curve(labels[:N],Z_list_average_over_walkers[:,1])
-plt.plot(fpr,tpr, color='black',label=r'Classifier using $\mathbb{E}[z_{1}]$, AUC = '+str(round(roc_auc_score(labels[:N],Z_list_average_over_walkers[:,1]),3)))
-
-rmatrix_VB = np.loadtxt(data_dir+'/rmatrix_VB.dat')
-fpr, tpr, thresholds = roc_curve(labels[:N],rmatrix_VB[:,1])
-plt.plot(fpr,tpr, color='magenta',label=r'$q(z_{1}|X)$, AUC = '+str(round(roc_auc_score(labels[:N],rmatrix_VB[:,1]),3)))
-
-rmatrix_init=nf.do_E_step_VB(np.ones(2),Nprior*fake_alphas,Nprior*fake_betas,X[:N])
-fpr, tpr, thresholds = roc_curve(labels[:N],rmatrix_init[:,1])
-plt.plot(fpr,tpr, color='red',label=r'Prior responsabilities, AUC = '+str(round(roc_auc_score(labels[:N],rmatrix_init[:,1]),3)))
-plt.legend(loc='lower right')
-#plt.yscale('log')
-plt.xlabel('FPR')
-plt.ylabel('TPR')
-plt.savefig(data_dir+'/roc_curve.pdf')
-plt.savefig(data_dir+'/roc_curve.png')
-
