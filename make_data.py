@@ -23,7 +23,7 @@ file_dir = sys.argv[1]
 data_dir = sys.argv[2]
 
 data=[]
-with open(file_dir+'/4top_ttW.csv','r') as f:
+with open(file_dir,'r') as f:
   for nline, line in enumerate(f):
     if(nline>0):
       data.append([float(line.split(' ')[i]) for i in range(3)])
