@@ -289,8 +289,8 @@ nposterior_up, bposterior_up, posterior_up = ax[1,0].hist(np.arange(min(data[:,0
 nposterior_down, bposterior_down, pposterior_down = ax[1,0].hist(np.arange(min(data[:,0]),max(data[:,0])+1.0,1.0),weights=alpha_mean[0]-alpha_err[0],bins=np.arange(min(data[:,0])-0.5,max(data[:,0])+0.5,1.0), histtype='step', linestyle='--', color='black')
 ax[1,0].bar(x=bposterior_up[:-1], height=nposterior_up-nposterior_down, bottom=nposterior_down, width=np.diff(bposterior_up), align='edge', linewidth=0, color='grey', alpha=0.25, zorder=-1)
 
-ax[0,0].set_ylim(0.0,0.6)
-ax[1,0].set_ylim(0.0,0.6)
+ax[0,0].set_ylim(0.0,1.0)
+ax[1,0].set_ylim(0.0,1.0)
 ax[0,0].legend(loc='upper right')
 ax[1,0].legend(loc='upper right')
 
@@ -312,8 +312,8 @@ nposterior_up, bposterior_up, posterior_up = ax[1,1].hist(np.arange(min(data[:,0
 nposterior_down, bposterior_down, pposterior_down = ax[1,1].hist(np.arange(min(data[:,0]),max(data[:,0])+1.0,1.0),weights=alpha_mean[1]-alpha_err[1],bins=np.arange(min(data[:,0])-0.5,max(data[:,0])+0.5,1.0), histtype='step', linestyle='--', color='black')
 ax[1,1].bar(x=bposterior_up[:-1], height=nposterior_up-nposterior_down, bottom=nposterior_down, width=np.diff(bposterior_up), align='edge', linewidth=0, color='grey', alpha=0.25, zorder=-1)
 
-ax[0,1].set_ylim(0.0,0.6)
-ax[1,1].set_ylim(0.0,0.6)
+ax[0,1].set_ylim(0.0,1.0)
+ax[1,1].set_ylim(0.0,1.0)
 ax[0,1].legend(loc='upper right')
 ax[1,1].legend(loc='upper right')
 
@@ -335,8 +335,8 @@ nposterior_up, bposterior_up, posterior_up = ax[1,2].hist(np.arange(min(data[:,1
 nposterior_down, bposterior_down, pposterior_down = ax[1,2].hist(np.arange(min(data[:,1]),max(data[:,1])+1.0,1.0),weights=beta_mean[0]-beta_err[0],bins=np.arange(min(data[:,1])-0.5,max(data[:,1])+0.5,1.0), histtype='step', linestyle='--', color='black')
 ax[1,2].bar(x=bposterior_up[:-1], height=nposterior_up-nposterior_down, bottom=nposterior_down, width=np.diff(bposterior_up), align='edge', linewidth=0, color='grey', alpha=0.25, zorder=-1)
 
-ax[0,2].set_ylim(0.0,0.6)
-ax[1,2].set_ylim(0.0,0.6)
+ax[0,2].set_ylim(0.0,1.0)
+ax[1,2].set_ylim(0.0,1.0)
 ax[0,2].legend(loc='upper right')
 ax[1,2].legend(loc='upper right')
 
@@ -358,8 +358,8 @@ nposterior_up, bposterior_up, posterior_up = ax[1,3].hist(np.arange(min(data[:,1
 nposterior_down, bposterior_down, pposterior_down = ax[1,3].hist(np.arange(min(data[:,1]),max(data[:,1])+1.0,1.0),weights=beta_mean[1]-beta_err[1],bins=np.arange(min(data[:,1])-0.5,max(data[:,1])+0.5,1.0), histtype='step', linestyle='--', color='black')
 ax[1,3].bar(x=bposterior_up[:-1], height=nposterior_up-nposterior_down, bottom=nposterior_down, width=np.diff(bposterior_up), align='edge', linewidth=0, color='grey', alpha=0.25, zorder=-1)
 
-ax[0,3].set_ylim(0.0,0.6)
-ax[1,3].set_ylim(0.0,0.6)
+ax[0,3].set_ylim(0.0,1.0)
+ax[1,3].set_ylim(0.0,1.0)
 ax[0,3].legend(loc='upper right')
 ax[1,3].legend(loc='upper right')
 
