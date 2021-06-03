@@ -280,7 +280,7 @@ ax[1,0].hist(np.arange(min(data[:,0]),max(data[:,0])+1.0,1.0),weights=true_alpha
 # prior
 nprior, bprior, pprior = ax[0,0].hist(np.arange(min(data[:,0]),max(data[:,0])+1.0,1.0),weights=fake_alphas[0],bins=np.arange(min(data[:,0])-0.5,max(data[:,0])+0.5,1.0), histtype='step', color='red',label='Prior ttW')
 nprior_up, bprior_up, pprior_up = ax[0,0].hist(np.arange(min(data[:,0]),max(data[:,0])+1.0,1.0),weights=fake_alphas[0]+np.sqrt(dirichlet.var(alpha=Nprior*fake_alphas[0])),bins=np.arange(min(data[:,0])-0.5,max(data[:,0])+0.5,1.0), histtype='step', linestyle='--', color='red')
-nprior_down, bprior_down, pprior_down = ax[0,0].hist(np.arange(min(data[:,0]),max(data[:,0])+1.0,1.0),weights=fake_alphas[0]-np.sqrt(dirichlet.var(alpha=Nprior*fake_alphas[0])),bins=np.arange(min(data[:,0])+0.5,max(data[:,0])+1.5,1.0), histtype='step', linestyle='--', color='red')
+nprior_down, bprior_down, pprior_down = ax[0,0].hist(np.arange(min(data[:,0]),max(data[:,0])+1.0,1.0),weights=fake_alphas[0]-np.sqrt(dirichlet.var(alpha=Nprior*fake_alphas[0])),bins=np.arange(min(data[:,0])-0.5,max(data[:,0])+0.5,1.0), histtype='step', linestyle='--', color='red')
 ax[0,0].bar(x=bprior_up[:-1], height=nprior_up-nprior_down, bottom=nprior_down, width=np.diff(bprior_up), align='edge', linewidth=0, color='red', alpha=0.25, zorder=-1)
 
 #posterior 
@@ -349,7 +349,7 @@ ax[1,3].hist(np.arange(min(data[:,1]),max(data[:,1])+1.0,1.0),weights=true_betas
 # prior
 nprior, bprior, pprior = ax[0,3].hist(np.arange(min(data[:,1]),max(data[:,1])+1.0,1.0),weights=fake_betas[1],bins=np.arange(min(data[:,1])-0.5,max(data[:,1])+0.5,1.0), histtype='step', color='red',label='Prior 4-top')
 nprior_up, bprior_up, pprior_up = ax[0,3].hist(np.arange(min(data[:,1]),max(data[:,1])+1.0,1.0),weights=fake_betas[1]+np.sqrt(dirichlet.var(alpha=Nprior*fake_betas[1])),bins=np.arange(min(data[:,1])-0.5,max(data[:,1])+0.5,1.0), histtype='step', linestyle='--', color='red')
-nprior_down, bprior_down, pprior_down = ax[0,3].hist(np.arange(min(data[:,1]),max(data[:,1])+1.0,1.0),weights=fake_betas[1]-np.sqrt(dirichlet.var(alpha=Nprior*fake_betas[1])),bins=np.arange(min(data[:,1])+0.5,max(data[:,1])+1.5,1.0), histtype='step', linestyle='--', color='red')
+nprior_down, bprior_down, pprior_down = ax[0,3].hist(np.arange(min(data[:,1]),max(data[:,1])+1.0,1.0),weights=fake_betas[1]-np.sqrt(dirichlet.var(alpha=Nprior*fake_betas[1])),bins=np.arange(min(data[:,1])-0.5,max(data[:,1])+0.5,1.0), histtype='step', linestyle='--', color='red')
 ax[0,3].bar(x=bprior_up[:-1], height=nprior_up-nprior_down, bottom=nprior_down, width=np.diff(bprior_up), align='edge', linewidth=0, color='red', alpha=0.25, zorder=-1)
 
 #posterior 
