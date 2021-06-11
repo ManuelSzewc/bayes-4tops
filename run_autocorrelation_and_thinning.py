@@ -68,77 +68,56 @@ pie_list=np.zeros((nwalkers,T,K))
 alphas_list=np.zeros((nwalkers,T,K,dj))
 betas_list=np.zeros((nwalkers,T,K,db))
 
-pie_prior_list=np.zeros((nwalkers,T,K))
-alphas_prior_list=np.zeros((nwalkers,T,K,dj))
-betas_prior_list=np.zeros((nwalkers,T,K,db))
+pie_prior_list=np.zeros((nwalkers*T,K))
+alphas_prior_list=np.zeros((nwalkers*T,K,dj))
+betas_prior_list=np.zeros((nwalkers*T,K,db))
 
 for walker in range(nwalkers):
   Z_list[walker]=np.load(data_dir+'/walker_'+str(walker+1)+'/Z_list.npy')
   pie_list[walker]=np.load(data_dir+'/walker_'+str(walker+1)+'/pie_list.npy')
-  pie_prior_list[walker]=dirichlet.rvs(size=T,alpha=np.ones(2))
   alphas_list[walker]=np.load(data_dir+'/walker_'+str(walker+1)+'/alphas_list.npy')
-  alphas_prior_list[walker,:,0,:]=dirichlet.rvs(size=T,alpha=Nprior*fake_alphas[0])
-  alphas_prior_list[walker,:,1,:]=dirichlet.rvs(size=T,alpha=Nprior*fake_alphas[1])
   betas_list[walker]=np.load(data_dir+'/walker_'+str(walker+1)+'/betas_list.npy')
-  betas_prior_list[walker,:,0,:]=dirichlet.rvs(size=T,alpha=Nprior*fake_betas[0])
-  betas_prior_list[walker,:,1,:]=dirichlet.rvs(size=T,alpha=Nprior*fake_betas[0])
+
+pie_list_all_walkers=np.zeros((nwalkers*T,K))
+alphas_list_all_walkers=np.zeros((nwalkers*T,K,dj))
+betas_list_all_walkers=np.zeros((nwalkers*T,K,db))
+for walker in range(nwalkers):
+  pie_list_all_walkers[walker*T:(walker+1)*T]=pie_list[walker]
+  alphas_list_all_walkers[walker*T:(walker+1)*T]=alphas_list[walker]
+  betas_list_all_walkers[walker*T:(walker+1)*T]=betas_list[walker]
+
+pie_prior_list=dirichlet.rvs(size=nwalkers*T,alpha=np.ones(2))
+alphas_prior_list[:,0,:]=dirichlet.rvs(size=nwalkers*T,alpha=Nprior*fake_alphas[0])
+alphas_prior_list[:,1,:]=dirichlet.rvs(size=nwalkers*T,alpha=Nprior*fake_alphas[1])
+betas_prior_list[:,0,:]=dirichlet.rvs(size=nwalkers*T,alpha=Nprior*fake_betas[0])
+betas_prior_list[:,1,:]=dirichlet.rvs(size=nwalkers*T,alpha=Nprior*fake_betas[0])
 
 dim=K+K*dj+K*db
 
-print("Prior")
-print(r'$\pi_{1}$')
-print(autocorr.integrated_time(pie_prior_list[:,:,1].T))
-for j in range(dj):
-  print(r'$\alpha_{0'+str(j)+'}$')
-  print(autocorr.integrated_time(alphas_prior_list[:,:,0,j].T))
-  print(r'$\alpha_{1'+str(j)+'}$')
-  print(autocorr.integrated_time(alphas_prior_list[:,:,1,j].T))
-for b in range(db):
-  print(r'$\beta_{0'+str(j)+'}$')
-  print(autocorr.integrated_time(betas_prior_list[:,:,0,b].T))
-  print(r'$\beta_{1'+str(j)+'}$')
-  print(autocorr.integrated_time(betas_prior_list[:,:,1,b].T))
 
 autocorrelations=np.zeros(dim)  
-print("Posterior")
-print(r'$\pi_{1}$')
 
-autocorrelations[0]=autocorr.integrated_time(pie_list[:,:,0].T)
-autocorrelations[1]=autocorr.integrated_time(pie_list[:,:,1].T)
-print(autocorr.integrated_time(pie_list[:,:,1].T))
-for j in range(dj):
-  print(r'$\alpha_{0'+str(j)+'}$')
-  print(autocorr.integrated_time(alphas_list[:,:,0,j].T))
-  autocorrelations[K+j]=autocorr.integrated_time(alphas_list[:,:,0,j].T)
-  print(r'$\alpha_{1'+str(j)+'}$')
-  print(autocorr.integrated_time(alphas_list[:,:,1,j].T))
-  autocorrelations[K+dj+j]=autocorr.integrated_time(alphas_list[:,:,1,j].T)
-for b in range(db):
-  print(r'$\beta_{0'+str(j)+'}$')
-  print(autocorr.integrated_time(betas_list[:,:,0,b].T))
-  autocorrelations[K+K*dj+b]=autocorr.integrated_time(betas_list[:,:,0,b].T)
-  print(r'$\beta_{1'+str(j)+'}$')
-  print(autocorr.integrated_time(betas_list[:,:,1,b].T))
-  autocorrelations[K+K*dj+db+b]=autocorr.integrated_time(betas_list[:,:,1,b].T)
+autocorrelations[0]=autocorr.integrated_time(pie_list_all_walkers[:,0].reshape(-1,1),tol=1000)
+autocorrelations[1]=autocorr.integrated_time(pie_list_all_walkers[:,1].reshape(-1,1),tol=1000)
 
 
 README=open(data_dir +'/README.txt',"wt")
-README.write('pi0: Prior %8.3f \t Posterior %8.3f \n'% (autocorr.integrated_time(pie_prior_list[:,:,1].T),autocorr.integrated_time(pie_list[:,:,0].T)))
-README.write('pi1: Prior %8.3f \t Posterior %8.3f \n'% (autocorr.integrated_time(pie_prior_list[:,:,1].T),autocorr.integrated_time(pie_list[:,:,1].T)))
+README.write('pi0: Prior %8.3f \t Posterior %8.3f \n'% (autocorr.integrated_time(pie_prior_list[:,1].reshape(-1,1),tol=1000),autocorr.integrated_time(pie_list_all_walkers[:,0].reshape(-1,1),tol=1000)))
+README.write('pi1: Prior %8.3f \t Posterior %8.3f \n'% (autocorr.integrated_time(pie_prior_list[:,1].reshape(-1,1),tol=1000),autocorr.integrated_time(pie_list_all_walkers[:,1].reshape(-1,1),tol=1000)))
 for j in range(dj):
-  README.write('alpha0%d\t: Prior %8.3f \t Posterior %8.3f \n'% (j,autocorr.integrated_time(alphas_prior_list[:,:,0,j].T),autocorr.integrated_time(alphas_list[:,:,0,j].T)))
-  README.write('alpha1%d\t: Prior %8.3f \t Posterior %8.3f \n'% (j,autocorr.integrated_time(alphas_prior_list[:,:,1,j].T),autocorr.integrated_time(alphas_list[:,:,1,j].T)))
+  README.write('alpha0%d\t: Prior %8.3f \t Posterior %8.3f \n'% (j,autocorr.integrated_time(alphas_prior_list[:,0,j].reshape(-1,1),tol=1000),autocorr.integrated_time(alphas_list_all_walkers[:,0,j].reshape(-1,1),tol=1000)))
+  README.write('alpha1%d\t: Prior %8.3f \t Posterior %8.3f \n'% (j,autocorr.integrated_time(alphas_prior_list[:,1,j].reshape(-1,1),tol=1000),autocorr.integrated_time(alphas_list_all_walkers[:,1,j].reshape(-1,1),tol=1000)))
 for b in range(db):
-  README.write('beta0%d\t: Prior %8.3f \t Posterior %8.3f \n'% (b,autocorr.integrated_time(betas_prior_list[:,:,0,b].T),autocorr.integrated_time(betas_list[:,:,0,b].T)))
-  README.write('beta1%d\t: Prior %8.3f \t Posterior %8.3f \n'% (b,autocorr.integrated_time(betas_prior_list[:,:,1,b].T),autocorr.integrated_time(betas_list[:,:,1,b].T)))
+  README.write('beta0%d\t: Prior %8.3f \t Posterior %8.3f \n'% (b,autocorr.integrated_time(betas_prior_list[:,0,b].reshape(-1,1),tol=1000),autocorr.integrated_time(betas_list_all_walkers[:,0,b].reshape(-1,1),tol=1000)))
+  README.write('beta1%d\t: Prior %8.3f \t Posterior %8.3f \n'% (b,autocorr.integrated_time(betas_prior_list[:,1,b].reshape(-1,1),tol=1000),autocorr.integrated_time(betas_list_all_walkers[:,1,b].reshape(-1,1),tol=1000)))
 
 README.close()
 
 
-Nbis = np.exp(np.linspace(np.log(100), np.log(T), 10)).astype(int)
+Nbis = np.exp(np.linspace(np.log(100), np.log(nwalkers*T), 10)).astype(int)
 new = np.empty(len(Nbis))
 for i, n in enumerate(Nbis):
-    new[i] = autocorr.integrated_time(pie_list[:n,:,1].T)
+    new[i] = autocorr.integrated_time(pie_list[:,1].reshape(-1,1),tol=1000)
 
 # Plot the comparisons
 plt.loglog(Nbis, new, "o-", label="new")
@@ -150,27 +129,3 @@ plt.ylabel(r"$\tau$ estimates for $\pi_{1}$")
 plt.legend(fontsize=14)
 plt.savefig(data_dir+'/pi1_tau_estimates.pdf')
 plt.savefig(data_dir+'/pi1_tau_estimates.png')
-
-
-# here I thin the files automatically
-tau_max=int(round(np.max(autocorrelations),0))
-
-
-README=open(data_dir +'/README.txt',"a")
-README.write('Thinned again with tau %d \n'% tau_max)
-README.write('pi0: Posterior %8.3f \t Thinned Posterior %8.3f \n'% (autocorrelations[0],autocorr.integrated_time(nf.thin_a_sample(pie_list[:,:,0],tau_max).T)))
-README.write('pi1: Posterior %8.3f \t Thinned Posterior %8.3f \n'% (autocorrelations[1],autocorr.integrated_time(nf.thin_a_sample(pie_list[:,:,1],tau_max).T)))
-for j in range(dj):
-  README.write('alpha0%d\t: Posterior %8.3f \t Thinned Posterior %8.3f \n'% (j,autocorrelations[K+j],autocorr.integrated_time(nf.thin_a_sample(alphas_list[:,:,0,j],tau_max).T)))
-  README.write('alpha1%d\t: Posterior %8.3f \t Thinned Posterior %8.3f \n'% (j,autocorrelations[K+dj+j],autocorr.integrated_time(nf.thin_a_sample(alphas_list[:,:,1,j],tau_max).T)))
-for b in range(db):
-  README.write('beta0%d\t: Posterior %8.3f \t Thinned Posterior %8.3f \n'% (b,autocorrelations[K+K*dj+b],autocorr.integrated_time(nf.thin_a_sample(betas_list[:,:,0,b],tau_max).T)))
-  README.write('beta1%d\t: Posterior %8.3f \t Thinned Posterior %8.3f \n'% (b,autocorrelations[K+K*dj+db+b],autocorr.integrated_time(nf.thin_a_sample(betas_list[:,:,1,b],tau_max).T)))
-
-README.close()
-
-
-np.save(data_dir+'/thinned_Z_list.npy',nf.thin_a_sample(Z_list,tau_max))
-np.save(data_dir+'/thinned_pie_list.npy',nf.thin_a_sample(pie_list,tau_max))
-np.save(data_dir+'/thinned_alphas_list.npy',nf.thin_a_sample(alphas_list,tau_max))
-np.save(data_dir+'/thinned_betas_list.npy',nf.thin_a_sample(betas_list,tau_max))
