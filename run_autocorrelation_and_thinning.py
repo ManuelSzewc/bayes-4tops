@@ -18,7 +18,7 @@ from sklearn.metrics import roc_auc_score, roc_curve
 import corner
 
 import necessary_functions as nf
-from emcee import autocorr
+
 
 data_dir = sys.argv[1]
 nwalkers = int(sys.argv[2])
@@ -87,50 +87,50 @@ dim=K+K*dj+K*db
 
 print("Prior")
 print(r'$\pi_{1}$')
-print(autocorr.integrated_time(pie_prior_list[:,:,1]))
+print(nf.autocorr_new(pie_prior_list[:,:,1]))
 for j in range(dj):
   print(r'$\alpha_{0'+str(j)+'}$')
-  print(autocorr.integrated_time(alphas_prior_list[:,:,0,j]))
+  print(nf.autocorr_new(alphas_prior_list[:,:,0,j]))
   print(r'$\alpha_{1'+str(j)+'}$')
-  print(autocorr.integrated_time(alphas_prior_list[:,:,1,j]))
+  print(nf.autocorr_new(alphas_prior_list[:,:,1,j]))
 for b in range(db):
   print(r'$\beta_{0'+str(j)+'}$')
-  print(autocorr.integrated_time(betas_prior_list[:,:,0,b]))
+  print(nf.autocorr_new(betas_prior_list[:,:,0,b]))
   print(r'$\beta_{1'+str(j)+'}$')
-  print(autocorr.integrated_time(betas_prior_list[:,:,1,b]))
+  print(nf.autocorr_new(betas_prior_list[:,:,1,b]))
 
 autocorrelations=np.zeros(dim)  
 print("Posterior")
 print(r'$\pi_{1}$')
 
-autocorrelations[0]=autocorr.integrated_time(pie_list[:,:,0])
-autocorrelations[1]=autocorr.integrated_time(pie_list[:,:,1])
-print(autocorr.integrated_time(pie_list[:,:,1]))
+autocorrelations[0]=nf.autocorr_new(pie_list[:,:,0])
+autocorrelations[1]=nf.autocorr_new(pie_list[:,:,1])
+print(nf.autocorr_new(pie_list[:,:,1]))
 for j in range(dj):
   print(r'$\alpha_{0'+str(j)+'}$')
-  print(autocorr.integrated_time(alphas_list[:,:,0,j]))
-  autocorrelations[K+j]=autocorr.integrated_time(alphas_list[:,:,0,j])
+  print(nf.autocorr_new(alphas_list[:,:,0,j]))
+  autocorrelations[K+j]=nf.autocorr_new(alphas_list[:,:,0,j])
   print(r'$\alpha_{1'+str(j)+'}$')
-  print(autocorr.integrated_time(alphas_list[:,:,1,j]))
-  autocorrelations[K+dj+j]=autocorr.integrated_time(alphas_list[:,:,1,j])
+  print(nf.autocorr_new(alphas_list[:,:,1,j]))
+  autocorrelations[K+dj+j]=nf.autocorr_new(alphas_list[:,:,1,j])
 for b in range(db):
   print(r'$\beta_{0'+str(j)+'}$')
-  print(autocorr.integrated_time(betas_list[:,:,0,b]))
-  autocorrelations[K+K*dj+b]=autocorr.integrated_time(betas_list[:,:,0,b])
+  print(nf.autocorr_new(betas_list[:,:,0,b]))
+  autocorrelations[K+K*dj+b]=nf.autocorr_new(betas_list[:,:,0,b])
   print(r'$\beta_{1'+str(j)+'}$')
-  print(autocorr.integrated_time(betas_list[:,:,1,b]))
-  autocorrelations[K+K*dj+db+b]=autocorr.integrated_time(betas_list[:,:,1,b])
+  print(nf.autocorr_new(betas_list[:,:,1,b]))
+  autocorrelations[K+K*dj+db+b]=nf.autocorr_new(betas_list[:,:,1,b])
 
 
 README=open(data_dir +'/README.txt',"wt")
-README.write('pi0: Prior %8.3f \t Posterior %8.3f \n'% (autocorr.integrated_time(pie_prior_list[:,:,1]),autocorr.integrated_time(pie_list[:,:,0])))
-README.write('pi1: Prior %8.3f \t Posterior %8.3f \n'% (autocorr.integrated_time(pie_prior_list[:,:,1]),autocorr.integrated_time(pie_list[:,:,1])))
+README.write('pi0: Prior %8.3f \t Posterior %8.3f \n'% (nf.autocorr_new(pie_prior_list[:,:,1]),nf.autocorr_new(pie_list[:,:,0])))
+README.write('pi1: Prior %8.3f \t Posterior %8.3f \n'% (nf.autocorr_new(pie_prior_list[:,:,1]),nf.autocorr_new(pie_list[:,:,1])))
 for j in range(dj):
-  README.write('alpha0%d\t: Prior %8.3f \t Posterior %8.3f \n'% (j,autocorr.integrated_time(alphas_prior_list[:,:,0,j]),autocorr.integrated_time(alphas_list[:,:,0,j])))
-  README.write('alpha1%d\t: Prior %8.3f \t Posterior %8.3f \n'% (j,autocorr.integrated_time(alphas_prior_list[:,:,1,j]),autocorr.integrated_time(alphas_list[:,:,1,j])))
+  README.write('alpha0%d\t: Prior %8.3f \t Posterior %8.3f \n'% (j,nf.autocorr_new(alphas_prior_list[:,:,0,j]),nf.autocorr_new(alphas_list[:,:,0,j])))
+  README.write('alpha1%d\t: Prior %8.3f \t Posterior %8.3f \n'% (j,nf.autocorr_new(alphas_prior_list[:,:,1,j]),nf.autocorr_new(alphas_list[:,:,1,j])))
 for b in range(db):
-  README.write('beta0%d\t: Prior %8.3f \t Posterior %8.3f \n'% (b,autocorr.integrated_time(betas_prior_list[:,:,0,b]),autocorr.integrated_time(betas_list[:,:,0,b])))
-  README.write('beta1%d\t: Prior %8.3f \t Posterior %8.3f \n'% (b,autocorr.integrated_time(betas_prior_list[:,:,1,b]),autocorr.integrated_time(betas_list[:,:,1,b])))
+  README.write('beta0%d\t: Prior %8.3f \t Posterior %8.3f \n'% (b,nf.autocorr_new(betas_prior_list[:,:,0,b]),nf.autocorr_new(betas_list[:,:,0,b])))
+  README.write('beta1%d\t: Prior %8.3f \t Posterior %8.3f \n'% (b,nf.autocorr_new(betas_prior_list[:,:,1,b]),nf.autocorr_new(betas_list[:,:,1,b])))
 
 README.close()
 
@@ -138,7 +138,7 @@ README.close()
 Nbis = np.exp(np.linspace(np.log(100), np.log(T), 10)).astype(int)
 new = np.empty(len(Nbis))
 for i, n in enumerate(Nbis):
-    new[i] = autocorr.integrated_time(pie_list[:n,:,1])
+    new[i] = nf.autocorr_new(pie_list[:n,:,1])
 
 # Plot the comparisons
 plt.loglog(Nbis, new, "o-", label="new")
@@ -158,14 +158,14 @@ tau_max=int(round(np.max(autocorrelations),0))
 
 README=open(data_dir +'/README.txt',"a")
 README.write('Thinned again with tau %d \n'% tau_max)
-README.write('pi0: Posterior %8.3f \t Thinned Posterior %8.3f \n'% (autocorrelations[0],autocorr.integrated_time(nf.thin_a_sample(pie_list[:,:,0],tau_max))))
-README.write('pi1: Posterior %8.3f \t Thinned Posterior %8.3f \n'% (autocorrelations[1],autocorr.integrated_time(nf.thin_a_sample(pie_list[:,:,1],tau_max))))
+README.write('pi0: Posterior %8.3f \t Thinned Posterior %8.3f \n'% (autocorrelations[0],nf.autocorr_new(nf.thin_a_sample(pie_list[:,:,0],tau_max))))
+README.write('pi1: Posterior %8.3f \t Thinned Posterior %8.3f \n'% (autocorrelations[1],nf.autocorr_new(nf.thin_a_sample(pie_list[:,:,1],tau_max))))
 for j in range(dj):
-  README.write('alpha0%d\t: Posterior %8.3f \t Thinned Posterior %8.3f \n'% (j,autocorrelations[K+j],autocorr.integrated_time(nf.thin_a_sample(alphas_list[:,:,0,j],tau_max))))
-  README.write('alpha1%d\t: Posterior %8.3f \t Thinned Posterior %8.3f \n'% (j,autocorrelations[K+dj+j],autocorr.integrated_time(nf.thin_a_sample(alphas_list[:,:,1,j],tau_max))))
+  README.write('alpha0%d\t: Posterior %8.3f \t Thinned Posterior %8.3f \n'% (j,autocorrelations[K+j],nf.autocorr_new(nf.thin_a_sample(alphas_list[:,:,0,j],tau_max))))
+  README.write('alpha1%d\t: Posterior %8.3f \t Thinned Posterior %8.3f \n'% (j,autocorrelations[K+dj+j],nf.autocorr_new(nf.thin_a_sample(alphas_list[:,:,1,j],tau_max))))
 for b in range(db):
-  README.write('beta0%d\t: Posterior %8.3f \t Thinned Posterior %8.3f \n'% (b,autocorrelations[K+K*dj+b],autocorr.integrated_time(nf.thin_a_sample(betas_list[:,:,0,b],tau_max))))
-  README.write('beta1%d\t: Posterior %8.3f \t Thinned Posterior %8.3f \n'% (b,autocorrelations[K+K*dj+db+b],autocorr.integrated_time(nf.thin_a_sample(betas_list[:,:,1,b],tau_max))))
+  README.write('beta0%d\t: Posterior %8.3f \t Thinned Posterior %8.3f \n'% (b,autocorrelations[K+K*dj+b],nf.autocorr_new(nf.thin_a_sample(betas_list[:,:,0,b],tau_max))))
+  README.write('beta1%d\t: Posterior %8.3f \t Thinned Posterior %8.3f \n'% (b,autocorrelations[K+K*dj+db+b],nf.autocorr_new(nf.thin_a_sample(betas_list[:,:,1,b],tau_max))))
 
 README.close()
 
