@@ -404,4 +404,9 @@ def do_homemade_Gibbs_sampling(Zini,data, eta_pie,eta_alpha,eta_beta,T,burnout,k
       beta_list[int(n/keep_every)]=beta_aux
   return Z_list, pie_list, alpha_list, beta_list
   
+def thin_a_sample(sample,keep_every):
+  nwalker=sample.shape[0]
+  T=sample.shape[1]
+  final_length= int(float(T)/float(keep_every))
+  return sample[:,0:T:keep_every]
 
