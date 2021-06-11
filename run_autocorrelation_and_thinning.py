@@ -63,7 +63,7 @@ dj=true_alphas.shape[1]
 db=true_betas.shape[1]
 
 
-Z_list=np.zeros((nwalkers,T+1,N,K))
+Z_list=np.zeros((nwalkers,T,N,K))
 pie_list=np.zeros((nwalkers,T,K))
 alphas_list=np.zeros((nwalkers,T,K,dj))
 betas_list=np.zeros((nwalkers,T,K,db))
