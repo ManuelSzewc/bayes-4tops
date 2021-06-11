@@ -18,7 +18,7 @@ from sklearn.metrics import roc_auc_score, roc_curve
 import corner
 
 import necessary_functions as nf
-import emcee
+from emcee import autocorr
 
 data_dir = sys.argv[1]
 nwalkers = int(sys.argv[2])
