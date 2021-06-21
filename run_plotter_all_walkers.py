@@ -3,6 +3,7 @@ import os
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+plt.rcParams.update({'axes.labelsize': 14})
 from scipy.stats import poisson, norm, bernoulli, expon, uniform, beta, gamma, multinomial, multivariate_normal
 from scipy.stats import rv_histogram
 from scipy.special import digamma
@@ -153,51 +154,14 @@ for i in range(db):
   var_corner[:,1+2*dj+db+i]=betas_list_all_walkers[:,1,i]
   var_corner_truth[1+2*dj+db+i]=true_betas[1,i]
   
-
-fig = corner.corner(
-    var_corner, labels=var_names,truths=var_corner_truth);
-
-plt.savefig(data_dir+'/corner_plot.png')
-plt.savefig(data_dir+'/corner_plot.pdf')
-
+  
 var_corner_prior=np.zeros((nwalkers*T,dim))
 var_corner_prior[:,0]=dirichlet.rvs(size=nwalkers*T,alpha=np.ones(2))[:,1]
 var_corner_prior[:,1:1+dj]=dirichlet.rvs(size=nwalkers*T,alpha=Nprior*fake_alphas[0])
 var_corner_prior[:,1+dj:1+2*dj]=dirichlet.rvs(size=nwalkers*T,alpha=Nprior*fake_alphas[1])
 var_corner_prior[:,1+2*dj:1+2*dj+db]=dirichlet.rvs(size=nwalkers*T,alpha=Nprior*fake_betas[0])
 var_corner_prior[:,1+2*dj+db:1+2*dj+2*db]=dirichlet.rvs(size=nwalkers*T,alpha=Nprior*fake_betas[1])
-
-
-corner.corner(
-    var_corner_prior,fig=fig, color='red');
-
-
-# Extract the axes
-axes = np.array(fig.axes).reshape((dim, dim))
-llr_diffs=np.zeros(dim)
-# Loop over the diagonal
-for i in range(dim):
-    ax = axes[i, i]
-    bins=np.arange(0.0,1.05,0.05)
-    post_hist=np.histogram(var_corner[:,i].ravel(),range=(0.0,1.0),bins=bins)
-    post_hist_dist = rv_histogram(post_hist)
-    post_logpdf=post_hist_dist.logpdf(var_corner_truth[i])
-    prior_hist=np.histogram(var_corner_prior[:,i].ravel(),range=(0.0,1.0),bins=bins)
-    prior_hist_dist = rv_histogram(prior_hist)
-    prior_logpdf=prior_hist_dist.logpdf(var_corner_truth[i])
-    llr_diffs[i]=2*(post_logpdf-prior_logpdf)
-    ax.set_title('LLR = '+str(round(llr_diffs[i],2)))
-
-prior_truth=dirichlet.logpdf(x=[1-f1,f1],alpha=np.ones(2))+dirichlet.logpdf(x=true_alphas[0],alpha=Nprior*fake_alphas[0])+dirichlet.logpdf(x=true_alphas[1],alpha=Nprior*fake_alphas[1])+dirichlet.logpdf(x=true_betas[0],alpha=Nprior*fake_betas[0])+dirichlet.logpdf(x=true_betas[1],alpha=Nprior*fake_betas[1])
-
-
-plt.text(0.05, 0.95, r'Sum of independent LLR = '+str(round(np.sum(llr_diffs),3)), transform=axes[0,1].transAxes, fontsize=14,verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
-
-
-        
-plt.savefig(data_dir+'/corner_plot_bis.png')
-plt.savefig(data_dir+'/corner_plot_bis.pdf')
-
+  
 # VB stuff, need to run run_vb.py first
 
 gamma_pie_VB = np.loadtxt(data_dir+'/gamma_pie_VB.dat')
@@ -211,8 +175,74 @@ var_corner_VB[:,1+dj:1+2*dj]=dirichlet.rvs(size=nwalkers*T,alpha=gamma_alpha_VB[
 var_corner_VB[:,1+2*dj:1+2*dj+db]=dirichlet.rvs(size=nwalkers*T,alpha=gamma_beta_VB[0])
 var_corner_VB[:,1+2*dj+db:1+2*dj+2*db]=dirichlet.rvs(size=nwalkers*T,alpha=gamma_beta_VB[1])
 
+Nbins=20
+lower_limit=np.zeros(dim)
+upper_limit=np.ones(dim)
+lower_limit=np.quantile(var_corner,0.01,axis=0)
+upper_limit=np.quantile(var_corner,0.99,axis=0)
+range_corner=[[lower_limit[d],upper_limit[d]] for d in range(dim)]
+
+lower_limit_prior=np.zeros(dim)
+upper_limit_prior=np.ones(dim)
+lower_limit_prior=np.quantile(var_corner_prior,0.01,axis=0)
+upper_limit_prior=np.quantile(var_corner_prior,0.99,axis=0)
+range_corner_prior=[[lower_limit_prior[d],upper_limit_prior[d]] for d in range(dim)]
+
+
+lower_limit_VB=np.zeros(dim)
+upper_limit_VB=np.ones(dim)
+lower_limit_VB=np.quantile(var_corner_VB,0.01,axis=0)
+upper_limit_VB=np.quantile(var_corner_VB,0.99,axis=0)
+range_corner_VB=[[lower_limit_VB[d],upper_limit_VB[d]] for d in range(dim)]
+
+
+total_range=[ [min(lower_limit[d],lower_limit_prior[d],lower_limit_VB[d]),max(upper_limit[d],upper_limit_prior[d],upper_limit_VB[d])] for d in range(dim)]
+
+
+fig = corner.corner(
+    var_corner, labels=var_names,truths=var_corner_truth,bins=Nbins,range=total_range);
+
+plt.savefig(data_dir+'/corner_plot.png')
+plt.savefig(data_dir+'/corner_plot.pdf')
+
+
 corner.corner(
-    var_corner_VB,fig=fig, color='magenta');
+    var_corner_prior,fig=fig, color='red',bins=Nbins,range=total_range);
+
+
+# Extract the axes
+axes = np.array(fig.axes).reshape((dim, dim))
+llr_diffs=np.zeros(dim)
+# Loop over the diagonal
+for i in range(dim):
+    ax = axes[i, i]
+    llr_diffs[i]=2*(nf.do_log_likelihood_estimate(var_corner[:,i],var_corner_truth[i])-nf.do_log_likelihood_estimate(var_corner_prior[:,i],var_corner_truth[i]))
+    ax.set_title('LLR = '+str(round(llr_diffs[i],2)))
+
+prior_truth=dirichlet.logpdf(x=[1-f1,f1],alpha=np.ones(2))+dirichlet.logpdf(x=true_alphas[0],alpha=Nprior*fake_alphas[0])+dirichlet.logpdf(x=true_alphas[1],alpha=Nprior*fake_alphas[1])+dirichlet.logpdf(x=true_betas[0],alpha=Nprior*fake_betas[0])+dirichlet.logpdf(x=true_betas[1],alpha=Nprior*fake_betas[1])
+
+
+plt.text(0.05, 0.95, r'Sum of independent Gibbs LLR = '+str(round(np.sum(llr_diffs),3)), transform=axes[0,1].transAxes, fontsize=14,verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+
+
+        
+plt.savefig(data_dir+'/corner_plot_bis.png')
+plt.savefig(data_dir+'/corner_plot_bis.pdf')
+
+
+corner.corner(
+    var_corner_VB,fig=fig, color='magenta',bins=Nbins,range=total_range);
+
+axes = np.array(fig.axes).reshape((dim, dim))
+llr_diffs_VB=np.zeros(dim)
+# Loop over the diagonal
+for i in range(dim):
+    ax = axes[i, i]
+    llr_diffs_VB[i]=2*(nf.do_log_likelihood_estimate(var_corner_VB[:,i],var_corner_truth[i])-nf.do_log_likelihood_estimate(var_corner_prior[:,i],var_corner_truth[i]))
+    ax.set_title('LLR = '+str(round(llr_diffs[i],2))+' ('+str(round(llr_diffs_VB[i],2))+')')
+
+plt.text(0.05, 0.75, r'Sum of independent VI LLR = '+str(round(np.sum(llr_diffs_VB),3)), transform=axes[0,1].transAxes, fontsize=14,verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+
 
 plt.savefig(data_dir+'/corner_plot_tris.png')
 plt.savefig(data_dir+'/corner_plot_tris.pdf')
@@ -246,7 +276,7 @@ var_gaussian_samples[:,1+2*dj+db:1+2*dj+2*db-1]=gaussian_samples[:,1+2*dj+db-3:1
 var_gaussian_samples[:,1+2*dj+2*db-1]=np.ones(nwalkers*T)-np.sum(gaussian_samples[:,1+2*dj+db-3:1+2*dj+2*db-1-3],axis=1)
 
 corner.corner(
-    var_gaussian_samples,fig=fig, color='limegreen');
+    var_gaussian_samples,fig=fig, color='limegreen',bins=Nbins,range=total_range);
 
 gauss_approx_truth=gaussian_approx.logpdf(var_corner_truth[mask_index])
 
@@ -387,6 +417,104 @@ fig.tight_layout()
 plt.savefig(data_dir+'/histogram.png')
 plt.savefig(data_dir+'/histogram.pdf')
 
+# condensed histograms
+
+fig, ax = plt.subplots(1,5,figsize=(20,4))
+
+# alpha ttW
+# data
+ax[0].hist(np.arange(min(data[:,0]),max(data[:,0])+1.0,1.0),weights=true_alphas[0],bins=np.arange(min(data[:,0])-0.5,max(data[:,0])+0.5,1.0), histtype='step',color='blue', label='True ttW')
+
+# prior
+nprior, bprior, pprior = ax[0].hist(np.arange(min(data[:,0]),max(data[:,0])+1.0,1.0),weights=fake_alphas[0],bins=np.arange(min(data[:,0])-0.5,max(data[:,0])+0.5,1.0), histtype='step', color='red',label='Prior ttW')
+nprior_up, bprior_up, pprior_up = ax[0].hist(np.arange(min(data[:,0]),max(data[:,0])+1.0,1.0),weights=fake_alphas[0]+np.sqrt(dirichlet.var(alpha=Nprior*fake_alphas[0])),bins=np.arange(min(data[:,0])-0.5,max(data[:,0])+0.5,1.0), histtype='step', linestyle='--', color='red')
+nprior_down, bprior_down, pprior_down = ax[0].hist(np.arange(min(data[:,0]),max(data[:,0])+1.0,1.0),weights=fake_alphas[0]-np.sqrt(dirichlet.var(alpha=Nprior*fake_alphas[0])),bins=np.arange(min(data[:,0])-0.5,max(data[:,0])+0.5,1.0), histtype='step', linestyle='--', color='red')
+ax[0].bar(x=bprior_up[:-1], height=nprior_up-nprior_down, bottom=nprior_down, width=np.diff(bprior_up), align='edge', linewidth=0, color='red', alpha=0.25, zorder=-1)
+
+#posterior 
+nposterior, bposterior, pposterior = ax[0].hist(np.arange(min(data[:,0]),max(data[:,0])+1.0,1.0),weights=alpha_mean[0],bins=np.arange(min(data[:,0])-0.5,max(data[:,0])+0.5,1.0), histtype='step', color='black',label='Posterior ttW')
+nposterior_up, bposterior_up, posterior_up = ax[0].hist(np.arange(min(data[:,0]),max(data[:,0])+1.0,1.0),weights=alpha_mean[0]+alpha_err[0],bins=np.arange(min(data[:,0])-0.5,max(data[:,0])+0.5,1.0), histtype='step', linestyle='--', color='black')
+nposterior_down, bposterior_down, pposterior_down = ax[0].hist(np.arange(min(data[:,0]),max(data[:,0])+1.0,1.0),weights=alpha_mean[0]-alpha_err[0],bins=np.arange(min(data[:,0])-0.5,max(data[:,0])+0.5,1.0), histtype='step', linestyle='--', color='black')
+ax[0].bar(x=bposterior_up[:-1], height=nposterior_up-nposterior_down, bottom=nposterior_down, width=np.diff(bposterior_up), align='edge', linewidth=0, color='grey', alpha=0.25, zorder=-1)
+
+ax[0].set_ylim(0.0,1.0)
+ax[0].legend(loc='upper right')
+
+# alpha 4top
+# data
+ax[1].hist(np.arange(min(data[:,0]),max(data[:,0])+1.0,1.0),weights=true_alphas[1],bins=np.arange(min(data[:,0])-0.5,max(data[:,0])+0.5,1.0), histtype='step',color='blue', label='True 4-top')
+
+# prior
+nprior, bprior, pprior = ax[1].hist(np.arange(min(data[:,0]),max(data[:,0])+1.0,1.0),weights=fake_alphas[1],bins=np.arange(min(data[:,0])-0.5,max(data[:,0])+0.5,1.0), histtype='step', color='red',label='Prior 4-top')
+nprior_up, bprior_up, pprior_up = ax[1].hist(np.arange(min(data[:,0]),max(data[:,0])+1.0,1.0),weights=fake_alphas[1]+np.sqrt(dirichlet.var(alpha=Nprior*fake_alphas[1])),bins=np.arange(min(data[:,0])-0.5,max(data[:,0])+0.5,1.0), histtype='step', linestyle='--', color='red')
+nprior_down, bprior_down, pprior_down = ax[1].hist(np.arange(min(data[:,0]),max(data[:,0])+1.0,1.0),weights=fake_alphas[1]-np.sqrt(dirichlet.var(alpha=Nprior*fake_alphas[1])),bins=np.arange(min(data[:,0])-0.5,max(data[:,0])+0.5,1.0), histtype='step', linestyle='--', color='red')
+ax[1].bar(x=bprior_up[:-1], height=nprior_up-nprior_down, bottom=nprior_down, width=np.diff(bprior_up), align='edge', linewidth=0, color='red', alpha=0.25, zorder=-1)
+
+#posterior 
+nposterior, bposterior, pposterior = ax[1].hist(np.arange(min(data[:,0]),max(data[:,0])+1.0,1.0),weights=alpha_mean[1],bins=np.arange(min(data[:,0])-0.5,max(data[:,0])+0.5,1.0), histtype='step', color='black',label='Posterior 4-top')
+nposterior_up, bposterior_up, posterior_up = ax[1].hist(np.arange(min(data[:,0]),max(data[:,0])+1.0,1.0),weights=alpha_mean[1]+alpha_err[1],bins=np.arange(min(data[:,0])-0.5,max(data[:,0])+0.5,1.0), histtype='step', linestyle='--', color='black')
+nposterior_down, bposterior_down, pposterior_down = ax[1].hist(np.arange(min(data[:,0]),max(data[:,0])+1.0,1.0),weights=alpha_mean[1]-alpha_err[1],bins=np.arange(min(data[:,0])-0.5,max(data[:,0])+0.5,1.0), histtype='step', linestyle='--', color='black')
+ax[1].bar(x=bposterior_up[:-1], height=nposterior_up-nposterior_down, bottom=nposterior_down, width=np.diff(bposterior_up), align='edge', linewidth=0, color='grey', alpha=0.25, zorder=-1)
+
+ax[1].set_ylim(0.0,1.0)
+ax[1].legend(loc='upper right')
+
+# beta ttW
+# data
+ax[2].hist(np.arange(min(data[:,1]),max(data[:,1])+1.0,1.0),weights=true_betas[0],bins=np.arange(min(data[:,1])-0.5,max(data[:,1])+0.5,1.0), histtype='step',color='blue', label='True ttW')
+
+# prior
+nprior, bprior, pprior = ax[2].hist(np.arange(min(data[:,1]),max(data[:,1])+1.0,1.0),weights=fake_betas[0],bins=np.arange(min(data[:,1])-0.5,max(data[:,1])+0.5,1.0), histtype='step', color='red',label='Prior ttW')
+nprior_up, bprior_up, pprior_up = ax[2].hist(np.arange(min(data[:,1]),max(data[:,1])+1.0,1.0),weights=fake_betas[0]+np.sqrt(dirichlet.var(alpha=Nprior*fake_betas[0])),bins=np.arange(min(data[:,1])-0.5,max(data[:,1])+0.5,1.0), histtype='step', linestyle='--', color='red')
+nprior_down, bprior_down, pprior_down = ax[2].hist(np.arange(min(data[:,1]),max(data[:,1])+1.0,1.0),weights=fake_betas[0]-np.sqrt(dirichlet.var(alpha=Nprior*fake_betas[0])),bins=np.arange(min(data[:,1])-0.5,max(data[:,1])+0.5,1.0), histtype='step', linestyle='--', color='red')
+ax[2].bar(x=bprior_up[:-1], height=nprior_up-nprior_down, bottom=nprior_down, width=np.diff(bprior_up), align='edge', linewidth=0, color='red', alpha=0.25, zorder=-1)
+
+#posterior 
+nposterior, bposterior, pposterior = ax[2].hist(np.arange(min(data[:,1]),max(data[:,1])+1.0,1.0),weights=beta_mean[0],bins=np.arange(min(data[:,1])-0.5,max(data[:,1])+0.5,1.0), histtype='step', color='black',label='Posterior ttW')
+nposterior_up, bposterior_up, posterior_up = ax[2].hist(np.arange(min(data[:,1]),max(data[:,1])+1.0,1.0),weights=beta_mean[0]+beta_err[0],bins=np.arange(min(data[:,1])-0.5,max(data[:,1])+0.5,1.0), histtype='step', linestyle='--', color='black')
+nposterior_down, bposterior_down, pposterior_down = ax[2].hist(np.arange(min(data[:,1]),max(data[:,1])+1.0,1.0),weights=beta_mean[0]-beta_err[0],bins=np.arange(min(data[:,1])-0.5,max(data[:,1])+0.5,1.0), histtype='step', linestyle='--', color='black')
+ax[2].bar(x=bposterior_up[:-1], height=nposterior_up-nposterior_down, bottom=nposterior_down, width=np.diff(bposterior_up), align='edge', linewidth=0, color='grey', alpha=0.25, zorder=-1)
+
+ax[2].set_ylim(0.0,1.0)
+ax[2].legend(loc='upper right')
+
+
+# beta 4top
+# data
+ax[3].hist(np.arange(min(data[:,1]),max(data[:,1])+1.0,1.0),weights=true_betas[1],bins=np.arange(min(data[:,1])-0.5,max(data[:,1])+0.5,1.0), histtype='step', color='blue',label='True 4-top')
+
+# prior
+nprior, bprior, pprior = ax[3].hist(np.arange(min(data[:,1]),max(data[:,1])+1.0,1.0),weights=fake_betas[1],bins=np.arange(min(data[:,1])-0.5,max(data[:,1])+0.5,1.0), histtype='step', color='red',label='Prior 4-top')
+nprior_up, bprior_up, pprior_up = ax[3].hist(np.arange(min(data[:,1]),max(data[:,1])+1.0,1.0),weights=fake_betas[1]+np.sqrt(dirichlet.var(alpha=Nprior*fake_betas[1])),bins=np.arange(min(data[:,1])-0.5,max(data[:,1])+0.5,1.0), histtype='step', linestyle='--', color='red')
+nprior_down, bprior_down, pprior_down = ax[3].hist(np.arange(min(data[:,1]),max(data[:,1])+1.0,1.0),weights=fake_betas[1]-np.sqrt(dirichlet.var(alpha=Nprior*fake_betas[1])),bins=np.arange(min(data[:,1])-0.5,max(data[:,1])+0.5,1.0), histtype='step', linestyle='--', color='red')
+ax[3].bar(x=bprior_up[:-1], height=nprior_up-nprior_down, bottom=nprior_down, width=np.diff(bprior_up), align='edge', linewidth=0, color='red', alpha=0.25, zorder=-1)
+
+#posterior 
+nposterior, bposterior, pposterior = ax[3].hist(np.arange(min(data[:,1]),max(data[:,1])+1.0,1.0),weights=beta_mean[1],bins=np.arange(min(data[:,1])-0.5,max(data[:,1])+0.5,1.0), histtype='step', color='black',label='Posterior 4-top')
+nposterior_up, bposterior_up, posterior_up = ax[3].hist(np.arange(min(data[:,1]),max(data[:,1])+1.0,1.0),weights=beta_mean[1]+beta_err[1],bins=np.arange(min(data[:,1])-0.5,max(data[:,1])+0.5,1.0), histtype='step', linestyle='--', color='black')
+nposterior_down, bposterior_down, pposterior_down = ax[3].hist(np.arange(min(data[:,1]),max(data[:,1])+1.0,1.0),weights=beta_mean[1]-beta_err[1],bins=np.arange(min(data[:,1])-0.5,max(data[:,1])+0.5,1.0), histtype='step', linestyle='--', color='black')
+ax[3].bar(x=bposterior_up[:-1], height=nposterior_up-nposterior_down, bottom=nposterior_down, width=np.diff(bposterior_up), align='edge', linewidth=0, color='grey', alpha=0.25, zorder=-1)
+
+ax[3].set_ylim(0.0,1.0)
+ax[3].legend(loc='upper right')
+
+# pies
+
+ax[4].axvline(f1,color='blue',label='True')
+ax[4].plot(f1vals,dirichlet.pdf([1-f1vals,f1vals],alpha=[1.0,1.0]),'r--',label='Prior')
+ax[4].hist(pie_list_all_walkers[:,1],color='black',label='Posterior',alpha=0.2,density=True)
+
+ax[4].legend(loc='upper left')
+
+ax[0].set_xlabel('$N_j$')
+ax[1].set_xlabel('$N_j$')
+ax[2].set_xlabel('$N_b$')
+ax[3].set_xlabel('$N_b$')
+ax[4].set_xlabel(r'$\pi_{1}$')
+fig.tight_layout()
+
+plt.savefig(data_dir+'/condensed_histogram.png')
+plt.savefig(data_dir+'/condensed_histogram.pdf')
 
 
 Z_list_all_walkers=np.zeros((nwalkers*T,N,K))
@@ -405,4 +533,3 @@ plt.ylabel('Events')
 plt.legend(loc='upper left')
 plt.savefig(data_dir+'/average_Z_assignments.pdf')
 plt.savefig(data_dir+'/average_Z_assignments.png')
-
