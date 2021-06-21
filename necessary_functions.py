@@ -411,3 +411,9 @@ def thin_a_sample(sample,keep_every):
   final_length= int(float(T)/float(keep_every))
   return sample[:,0:T:keep_every]
 
+def do_log_likelihood_estimate(samples,val,window=0.01,thresh=0.001):
+  nk = np.sum(np.where(samples<=val+0.5*window,1.0,0.0)*np.where(samples>=val-0.5*window,1.0,0.0))
+  if(nk>thresh*len(samples)):
+    return np.log(nk/(len(samples)*window))
+  else:
+    return np.log(thresh)
