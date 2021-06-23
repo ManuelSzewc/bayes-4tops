@@ -122,10 +122,33 @@ for i, n in enumerate(Nbis):
 # Plot the comparisons
 plt.loglog(Nbis, new, "o-", label="new")
 ylim = plt.gca().get_ylim()
-plt.plot(Nbis, Nbis / 50.0, "--k", label=r"$\tau = N/50$")
+plt.plot(Nbis, Nbis / 1000.0, "--k", label=r"$\tau = N/1000$")
 plt.ylim(ylim)
 plt.xlabel("number of samples, $N$")
 plt.ylabel(r"$\tau$ estimates for $\pi_{1}$")
 plt.legend(fontsize=14)
 plt.savefig(data_dir+'/pi1_tau_estimates.pdf')
 plt.savefig(data_dir+'/pi1_tau_estimates.png')
+
+# here I thin the files automatically
+tau_max=int(round(np.max(autocorrelations),0))
+
+
+README=open(data_dir +'/README.txt',"a")
+README.write('Thinned again with tau %d \n'% tau_max)
+README.write('pi0: Posterior %8.3f \t Thinned Posterior %8.3f \n'% (autocorrelations[0],nf.autocorr_new(nf.thin_a_sample(pie_list[:,:,0],tau_max))))
+README.write('pi1: Posterior %8.3f \t Thinned Posterior %8.3f \n'% (autocorrelations[1],nf.autocorr_new(nf.thin_a_sample(pie_list[:,:,1],tau_max))))
+for j in range(dj):
+  README.write('alpha0%d\t: Posterior %8.3f \t Thinned Posterior %8.3f \n'% (j,autocorrelations[K+j],nf.autocorr_new(nf.thin_a_sample(alphas_list[:,:,0,j],tau_max))))
+  README.write('alpha1%d\t: Posterior %8.3f \t Thinned Posterior %8.3f \n'% (j,autocorrelations[K+dj+j],nf.autocorr_new(nf.thin_a_sample(alphas_list[:,:,1,j],tau_max))))
+for b in range(db):
+  README.write('beta0%d\t: Posterior %8.3f \t Thinned Posterior %8.3f \n'% (b,autocorrelations[K+K*dj+b],nf.autocorr_new(nf.thin_a_sample(betas_list[:,:,0,b],tau_max))))
+  README.write('beta1%d\t: Posterior %8.3f \t Thinned Posterior %8.3f \n'% (b,autocorrelations[K+K*dj+db+b],nf.autocorr_new(nf.thin_a_sample(betas_list[:,:,1,b],tau_max))))
+
+README.close()
+
+
+np.save(data_dir+'/thinned_Z_list.npy',nf.thin_a_sample(Z_list[:,:-1],tau_max))#this is for the uncorrected files where the last Z is a zero matrix
+np.save(data_dir+'/thinned_pie_list.npy',nf.thin_a_sample(pie_list,tau_max))
+np.save(data_dir+'/thinned_alphas_list.npy',nf.thin_a_sample(alphas_list,tau_max))
+np.save(data_dir+'/thinned_betas_list.npy',nf.thin_a_sample(betas_list,tau_max))
