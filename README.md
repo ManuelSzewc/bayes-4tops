@@ -1,6 +1,6 @@
 # Posterior inference of a simple probabilistic model of 4-top production at the LHC
 
-Based on arxiv:XXXXX
+Based on arxiv:2107.00668
 
 We consider the 4-top production and one of its main irreducible backgrounds ttW, measured at the LHC on 2LSS++ final state. As input, we consider the number of light and b-tagged jets measured per event. Using a mixture model, we assume conditional independence of both measurements. This forces the model to encode the correlation between the two variables in the theme assignments. After we specify the priors, we can infer the posterior distributions over the relevant parameters: the theme fractions and the theme distributions (two per theme). 
 
