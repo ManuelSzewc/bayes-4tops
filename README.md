@@ -8,4 +8,4 @@ In the "necessary_functions" module we include a series of functions which allow
 
 ./run_gibbs_sampler.bash "data directory" "output directory" "Number of events considered" "Number of walkers" "Number of saved iterations per walker" "Burn-in samples" "Separation between saved samples"
 
-The plots found in figs/ correspond to the physics case detailed in arxiv:XXXX
+The plots found in figs/ correspond to the physics case detailed in arxiv:2107.00668
