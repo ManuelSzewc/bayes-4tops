@@ -38,9 +38,9 @@ ohe_nb=OneHotEncoder(handle_unknown='error')
 Y1=ohe_nj.fit_transform(data[:,0].reshape(-1,1)).toarray()
 Y2=ohe_nb.fit_transform(data[:,1].reshape(-1,1)).toarray()
 
-X=[]
-for n in range(Y1.shape[0]):
-  X.append([Y1[n],Y2[n]])
+# X=[]
+# for n in range(Y1.shape[0]):
+#   X.append([Y1[n],Y2[n]])
 
 true_alphas=np.zeros((2,Y1.shape[1]))
 true_betas=np.zeros((2,Y2.shape[1]))
@@ -61,8 +61,35 @@ K=true_alphas.shape[0]
 dj=true_alphas.shape[1]
 db=true_betas.shape[1]
 
-Z_init=multinomial.rvs(p=[0.5,0.5],n=1,size=N)
-Z_list=np.zeros((T,N,K))
+# Z_init=multinomial.rvs(p=[0.5,0.5],n=1,size=N)
+# Z_list=np.zeros((T,N,K))
+# pie_list=np.zeros((T,K))
+# alphas_list=np.zeros((T,K,dj))
+# betas_list=np.zeros((T,K,db))
+
+# Nprior=10
+# eta_pie, eta_alpha, eta_beta =np.ones(2), Nprior*fake_alphas, Nprior*fake_betas
+
+# Z_list, pie_list, alphas_list, betas_list = nf.do_homemade_Gibbs_sampling(Z_init,X[:N], eta_pie,eta_alpha,eta_beta,T,burnout,keep_every)
+
+#### for optimized version of Gibbs sampler
+
+binsj=np.arange(min(data[:,0])-0.5,max(data[:,0])+1.5,1.0)
+binsb=np.arange(min(data[:,1])-0.5,max(data[:,1])+1.5,1.0)
+
+print(max(data[:,0]),binsj, binsb)
+njb, edgesx, edgesy = np.histogram2d(data[:N,0],data[:N,1],bins=[binsj,binsb])
+np.save(data_dir+'/njb.npy',njb)
+print(njb.shape)
+
+if njb.shape[0]!=dj or njb.shape[1]!=db:
+  print("Wrong observable length")
+
+Z_init=np.zeros((K,dj,db))
+for j in range(dj):
+  for b in range(db):
+    Z_init[:,j,b]= multinomial.rvs(p=[0.5,0.5],n=njb[j,b])
+Z_list=np.zeros((T,K,dj,db))
 pie_list=np.zeros((T,K))
 alphas_list=np.zeros((T,K,dj))
 betas_list=np.zeros((T,K,db))
@@ -70,7 +97,8 @@ betas_list=np.zeros((T,K,db))
 Nprior=10
 eta_pie, eta_alpha, eta_beta =np.ones(2), Nprior*fake_alphas, Nprior*fake_betas
 
-Z_list, pie_list, alphas_list, betas_list = nf.do_homemade_Gibbs_sampling(Z_init,X[:N], eta_pie,eta_alpha,eta_beta,T,burnout,keep_every)
+Z_list, pie_list, alphas_list, betas_list = nf.do_homemade_Gibbs_sampling_optimized(Z_init,njb, eta_pie,eta_alpha,eta_beta,T,burnout,keep_every)
+
 
 np.save(output_dir+'/Z_list.npy',Z_list)
 np.save(output_dir+'/pie_list.npy',pie_list)

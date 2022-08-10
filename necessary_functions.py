@@ -377,6 +377,28 @@ def one_Gibbs_step(Zini,data,eta_pie,eta_alpha,eta_beta):
     bn=np.argmax(data[n][1])
     Zfin[n]=multinomial.rvs(p=[pie[0]*alpha[0,jn]*beta[0,bn]/(pie[0]*alpha[0,jn]*beta[0,bn]+pie[1]*alpha[1,jn]*beta[1,bn]),pie[1]*alpha[1,jn]*beta[1,bn]/(pie[0]*alpha[0,jn]*beta[0,bn]+pie[1]*alpha[1,jn]*beta[1,bn])],n=1,size=1)[0]
   return Zfin, pie, alpha, beta
+
+def one_Gibbs_step_optimized(Zini,Njb,eta_pie,eta_alpha,eta_beta):
+  N=np.sum(Njb)
+  K=Zini.shape[0]
+  dj=Zini.shape[1]
+  db=Zini.shape[2]
+  Nkj = np.sum(Zini,axis=2)
+  Nkb = np.sum(Zini,axis=1)
+  Nk=np.sum(Nkj,axis=1)
+
+  pie=dirichlet.rvs(alpha=eta_pie+Nk,size=1)[0]
+  alpha0=dirichlet.rvs(alpha=eta_alpha[0]+Nkj[0],size=1)[0]
+  alpha1=dirichlet.rvs(alpha=eta_alpha[1]+Nkj[1],size=1)[0]
+  beta0=dirichlet.rvs(alpha=eta_beta[0]+Nkb[0],size=1)[0]
+  beta1=dirichlet.rvs(alpha=eta_beta[1]+Nkb[1],size=1)[0]
+  alpha=np.hstack([alpha0.reshape(-1,1),alpha1.reshape(-1,1)]).T
+  beta=np.hstack([beta0.reshape(-1,1),beta1.reshape(-1,1)]).T
+  Zfin=np.zeros((K,dj,db))
+  for j in range(dj):
+    for b in range(db):
+      Zfin[:,j,b]=multinomial.rvs(p=[pie[0]*alpha[0,j]*beta[0,b]/(pie[0]*alpha[0,j]*beta[0,b]+pie[1]*alpha[1,j]*beta[1,b]),pie[1]*alpha[1,j]*beta[1,b]/(pie[0]*alpha[0,j]*beta[0,b]+pie[1]*alpha[1,j]*beta[1,b])],n=Njb[j,b],size=1)[0]
+  return Zfin, pie, alpha, beta
   
 def do_homemade_Gibbs_sampling(Zini,data, eta_pie,eta_alpha,eta_beta,T,burnout,keep_every):
   N=Zini.shape[0]
@@ -398,6 +420,34 @@ def do_homemade_Gibbs_sampling(Zini,data, eta_pie,eta_alpha,eta_beta,T,burnout,k
   Z_list[0]=Z_aux
   for n in range(T*keep_every):
     Z_aux, pie_aux, alpha_aux, beta_aux = one_Gibbs_step(Z_aux,data,eta_pie,eta_alpha,eta_beta)
+    if(float(n)%float(keep_every) == 0):
+      Z_list[int(n/keep_every)]=Z_aux
+      pie_list[int(n/keep_every)]=pie_aux
+      alpha_list[int(n/keep_every)]=alpha_aux
+      beta_list[int(n/keep_every)]=beta_aux
+  return Z_list, pie_list, alpha_list, beta_list
+
+def do_homemade_Gibbs_sampling_optimized(Zini,Njb, eta_pie,eta_alpha,eta_beta,T,burnout,keep_every):
+  N=np.sum(Njb)
+  K=Zini.shape[0]
+  dj=Zini.shape[1]
+  db=Zini.shape[2]
+
+  Z_list=np.zeros((T,K,dj,db))
+  pie_list=np.zeros((T,K))
+  alpha_list=np.zeros((T,K,dj))
+  beta_list=np.zeros((T,K,db))
+  Z_aux = Zini
+  pie_aux=np.zeros(K)
+  alpha_aux=np.zeros((K,dj))
+  beta_aux=np.zeros((K,db))
+  ## burnout to erase dependence on initial step
+  for ind_burn in range(burnout):
+    Z_aux, pie_aux, alpha_aux, beta_aux = one_Gibbs_step_optimized(Zini,Njb,eta_pie,eta_alpha,eta_beta)
+  ## now lets save every keep_every until I have T samples
+  # Z_list[0]=Z_aux
+  for n in range(T*keep_every):
+    Z_aux, pie_aux, alpha_aux, beta_aux = one_Gibbs_step_optimized(Z_aux,Njb,eta_pie,eta_alpha,eta_beta)
     if(float(n)%float(keep_every) == 0):
       Z_list[int(n/keep_every)]=Z_aux
       pie_list[int(n/keep_every)]=pie_aux

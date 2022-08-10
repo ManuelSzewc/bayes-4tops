@@ -63,7 +63,9 @@ dj=true_alphas.shape[1]
 db=true_betas.shape[1]
 
 
-Z_list=np.zeros((nwalkers,T,N,K))
+# Z_list=np.zeros((nwalkers,T,N,K))
+#### for optimized version of Gibbs sampler
+Z_list = np.zeros((nwalkers,T,K,dj,db))
 pie_list=np.zeros((nwalkers,T,K))
 alphas_list=np.zeros((nwalkers,T,K,dj))
 betas_list=np.zeros((nwalkers,T,K,db))
@@ -148,7 +150,7 @@ for b in range(db):
 README.close()
 
 
-np.save(data_dir+'/thinned_Z_list.npy',nf.thin_a_sample(Z_list[:,:-1],tau_max))#this is for the uncorrected files where the last Z is a zero matrix
+np.save(data_dir+'/thinned_Z_list.npy',nf.thin_a_sample(Z_list,tau_max))#this is for the uncorrected files where the last Z is a zero matrix
 np.save(data_dir+'/thinned_pie_list.npy',nf.thin_a_sample(pie_list,tau_max))
 np.save(data_dir+'/thinned_alphas_list.npy',nf.thin_a_sample(alphas_list,tau_max))
 np.save(data_dir+'/thinned_betas_list.npy',nf.thin_a_sample(betas_list,tau_max))

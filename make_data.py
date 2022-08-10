@@ -60,8 +60,9 @@ data_smeared=data_smeared[np.where(data_smeared[:,0]>=data_smeared[:,1])[0]]
 
 np.savetxt(data_dir+'/processed_data_smeared.dat',data_smeared)
 
-binsj=np.arange(min(data[:,0])-0.5,max(data[:,0])+0.5,1.0)
-binsb=np.arange(min(data[:,1])-0.5,max(data[:,1])+0.5,1.0)
+binsj=np.arange(min(data[:,0])-0.5,max(data[:,0])+1.5,1.0)
+binsb=np.arange(min(data[:,1])-0.5,max(data[:,1])+1.5,1.0)
+
 
 fig, (ax1, ax2) = plt.subplots(2,2,figsize=(12,9))
 
