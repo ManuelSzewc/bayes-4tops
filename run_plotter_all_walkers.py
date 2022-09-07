@@ -59,7 +59,6 @@ for k in range(2):
   fake_betas[k]=np.mean(Y2_smeared[data_smeared[:,2]==k],axis=0)
   
 # now I do need to use Nprior
-Nprior=10
 fake_alphas, fake_betas = np.where(fake_alphas>=1.01/Nprior,fake_alphas,1.01/Nprior), np.where(fake_betas>=1.01/Nprior,fake_betas,1.01/Nprior)
 fake_alphas, fake_betas = np.array([fake_alphas[k]/np.sum(fake_alphas[k]) for k in range(K)], np.array([fake_betas[k]/np.sum(fake_betas[k]) for k in range(K)]
 
