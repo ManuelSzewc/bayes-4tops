@@ -60,7 +60,7 @@ dj=true_alphas.shape[1]
 db=true_betas.shape[1]
 
 
-eta_pie, eta_alpha, eta_beta =np.ones(2), Nprior*fake_alphas, Nprior*fake_betas
+eta_pie, eta_alpha, eta_beta =np.ones(2), np.where(Nprior*fake_alphas>=1.01,Nprior*fake_alphas,1.01), np.where(Nprior*fake_betas>=1.01,Nprior*fake_betas,1.01)
 
 gamma_pie_0, gamma_alpha_0, gamma_beta_0 = np.ones(2), Ninit*fake_alphas, Ninit*fake_betas
 

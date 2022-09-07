@@ -95,7 +95,10 @@ alphas_list=np.zeros((T,K,dj))
 betas_list=np.zeros((T,K,db))
 
 Nprior=10
-eta_pie, eta_alpha, eta_beta =np.ones(2), Nprior*fake_alphas, Nprior*fake_betas
+
+# ensure no parameters of the prior are too small
+
+eta_pie, eta_alpha, eta_beta =np.ones(2), np.where(Nprior*fake_alphas>=1.01,Nprior*fake_alphas,1.01), np.where(Nprior*fake_betas>=1.01,Nprior*fake_betas,1.01)
 
 Z_list, pie_list, alphas_list, betas_list = nf.do_homemade_Gibbs_sampling_optimized(Z_init,njb, eta_pie,eta_alpha,eta_beta,T,burnout,keep_every)
 
