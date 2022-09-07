@@ -61,6 +61,7 @@ db=true_betas.shape[1]
 
 
 eta_pie, eta_alpha, eta_beta =np.ones(2), np.where(Nprior*fake_alphas>=1.01,Nprior*fake_alphas,1.01), np.where(Nprior*fake_betas>=1.01,Nprior*fake_betas,1.01)
+eta_alpha, eta_beta = np.array([eta_alpha[k]*Nprior/np.sum(eta_alpha[k]) for k in range(K)], np.array([eta_beta[k]*Nprior/np.sum(eta_beta[k]) for k in range(K)]
 
 gamma_pie_0, gamma_alpha_0, gamma_beta_0 = np.ones(2), Ninit*fake_alphas, Ninit*fake_betas
 

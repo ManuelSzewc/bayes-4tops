@@ -62,6 +62,8 @@ for k in range(2):
 # now I do need to use Nprior
 Nprior=10
 fake_alphas, fake_betas = np.where(fake_alphas>=1.01/Nprior,fake_alphas,1.01/Nprior), np.where(fake_betas>=1.01/Nprior,fake_betas,1.01/Nprior)
+fake_alphas, fake_betas = np.array([fake_alphas[k]/np.sum(fake_alphas[k]) for k in range(K)], np.array([fake_betas[k]/np.sum(fake_betas[k]) for k in range(K)]
+
 
 K=true_alphas.shape[0]
 dj=true_alphas.shape[1]

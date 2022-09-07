@@ -99,6 +99,7 @@ Nprior=10
 # ensure no parameters of the prior are too small
 
 eta_pie, eta_alpha, eta_beta =np.ones(2), np.where(Nprior*fake_alphas>=1.01,Nprior*fake_alphas,1.01), np.where(Nprior*fake_betas>=1.01,Nprior*fake_betas,1.01)
+eta_alpha, eta_beta = np.array([eta_alpha[k]*Nprior/np.sum(eta_alpha[k]) for k in range(K)], np.array([eta_beta[k]*Nprior/np.sum(eta_beta[k]) for k in range(K)]
 
 Z_list, pie_list, alphas_list, betas_list = nf.do_homemade_Gibbs_sampling_optimized(Z_init,njb, eta_pie,eta_alpha,eta_beta,T,burnout,keep_every)
 
